@@ -1,0 +1,23 @@
+# 忽略子文件夹中的 Unity 临时目录
+FindMaestro/Library/
+FindMaestro/Temp/
+FindMaestro/Obj/
+FindMaestro/Build/
+FindMaestro/Builds/
+FindMaestro/Logs/
+FindMaestro/UserSettings/
+
+# 操作系统
+.DS_Store
+Thumbs.db
+
+# IDE
+*.csproj
+*.sln
+*.suo
+*.user
+*.userprefs
+*.pidb
+*.booproj
+.vs/
+.idea/
