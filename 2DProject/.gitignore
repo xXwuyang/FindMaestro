@@ -1,0 +1,67 @@
+# ====================
+# Unity 忽略文件
+# ====================
+
+# 编译生成的文件
+/[Bb]in/
+/[Oo]bj/
+/[Ll]ibrary/
+/[Tt]emp/
+/[Ll]ogs/
+/[Uu]ser[Ss]ettings/
+
+# Visual Studio 文件
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+
+# Rider / JetBrains
+.idea/
+*.sln.iml
+
+# VSCode
+.vscode/
+
+# 构建输出
+/[Bb]uild/
+/[Dd]eploy/
+/ABPackages/
+
+# 自动生成的 Unity 文件
+*.unitypackage
+*.apk
+*.aab
+*.exe
+*.app
+
+# Unity 缓存
+/Assets/AssetStoreTools*
+/Assets/AssetStoreTools*
+
+# 特定平台
+[Dd]esktop.ini
+[Tt]humbs.db
+*.tmp
+*.bak
+*.swp
+*.swo
+
+# 打包时的临时文件
+*.backup
+*.pidb
+*.log
+*.csv
+
+# 本地配置（但保留 PlayerPrefs 相关）
+*.userprefs
+*.asset
