@@ -1,0 +1,36 @@
+=== CHANGE LOG ===
+
+Student: Qiyin Huang
+Date: 2026/5/9
+
+What I added/changed:
+
+1. UI / Menu:
+   - Added Instructions panel with game controls and goal
+   - Added airplane icon health bar (bottom-left, 5 lives max)
+
+2. Gameplay:
+   - Added Level 2 after defeating Level 1 enemies
+   - Added Planet that moves randomly and spawns enemies in 3 waves
+   - Enemies spawn in a circle around the planet (no more line formation)
+   - Dynamic difficulty: enemy speed increases with player's score
+
+3. Feedback / Polish:
+   - Planet flashes yellow when moving, red when player collides
+   - Player knocked back when hitting planet
+   - Background changes to purple in Level 2
+   - Health icons update when player takes damage
+
+What I tested:
+✓ Start game from menu
+✓ Complete Level 1 → Level 2 starts
+✓ Planet spawns 3 waves × 3 enemies
+✓ Planet moves between waves
+✓ Touching planet reduces health and knockback
+✓ Health icons decrease correctly
+✓ Victory screen after Level 2 complete
+✓ Game over when lives = 0
+✓ Return to menu works
+
+Known issues:
+- None (all features working)
