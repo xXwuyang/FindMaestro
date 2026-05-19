@@ -1,0 +1,14 @@
+Temporary game name: Find Maestro
+One-sentence idea: A first-person perspective game that explores true creativity through the storyline and interactions with Non-player-characters/Scene objects in the game. 
+What to repeat: WASD to move, 'space' to jump, go through the scene and press 'E' to search clues.
+Unity format: 3D-first perspective
+Vertical slice: A 10-minute first-person exploration of one complete 'memory ruin' level, where the player wakes up in a collapsed gallery, finds one NPC, collects two memory fragments, and triggers the 'awakening' ending.
+Core System: My game's core system is 'exploration-driven narrative collection.' Players walk freely in the ruins, explore the scenes, can look at some scene objects and talk to NPCs, collecting clues and information they might see. Guided by these clues and information, they explore more scenes, then restore the entire core concept and complete the protagonist's identity awakening.
+GitHub status: https://github.com/xXwuyang/FindMaestro
+Biggest risk: Whether the design of the scene atmosphere, the coherence of the story, and the degree to which players are allowed to explore are attractive enough
+
+Sort features:
+Must-have: First person movement, basic interaction system(with NPC and clues in scene), NPC dialogue system, basic UI, one complete level, basic atmosphere, stable playable build
+Should-have: multiple NPC, multiple level game scenes, multiple endings, simple scene animation
+Could-have: Voice acting, Pause menu, 
+Cut-first: Multiplayer / online, Complex physics, Custom key rebinding and so on(Think of adding more later).
