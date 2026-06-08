@@ -6,74 +6,70 @@ using System.Collections;
 public class ReadableNote : MonoBehaviour
 {
     [Header("Cinemachine 相机")]
-    public CinemachineVirtualCamera vcam;   // 拖入 VCam_Notepad
+    public CinemachineVirtualCamera vcam;   // 每个物品独立的 VCam
 
-    [Header("UI 面板")]
-    public GameObject infoPanel;
-    public TextMeshProUGUI infoTextUI;
+    [Header("详情阅读 UI")]
+    public GameObject infoPanel;            // 显示详细文字的面板（带滚动条）
+    public TextMeshProUGUI infoTextUI;      // 详情文字
+
+    [Header("提示 UI（全局共用）")]
+    public GameObject hintPanel;            // 屏幕固定位置的提示面板
+    public TextMeshProUGUI hintTextUI;      // 提示文字内容
 
     [Header("3D 提示文字")]
-    public GameObject pressE_3D;            // Notepad 上方的 "Press E" 3D 文字
+    public GameObject pressE_3D;            // 物体上方的 3D "Press E" 文字
 
     [Header("高亮材质")]
-    public Material normalMaterial;          // 普通材质
-    public Material highlightMaterial;       // 高亮材质
-    public Renderer noteRenderer;            // Notepad 的 Renderer
+    public Material normalMaterial;
+    public Material highlightMaterial;
+    public Renderer noteRenderer;
 
     [Header("文字内容")]
     [TextArea(5, 10)]
     public string infoText = "笔记内容...";
 
+    // 全局共享计数器（所有可交互物体共用前两次提示）
+    private static int globalHintCount = 0;
+    private const int MAX_HINT_COUNT = 2;
+
+    // 提示文字（完整说明）
+    private string hintMessage = "When an object shows a yellow stroke, press E can learn more about this clue";
+
+    private GameObject player;
+    private StarterAssets.FirstPersonController playerController;
+    private Renderer[] playerRenderers;
     private bool isViewing = false;
     private bool isPlayerNear = false;
-    private MonoBehaviour playerController;   // 玩家控制器引用
-    private GameObject player;                // 玩家对象引用
-    private Renderer[] playerRenderers;       // 玩家的所有渲染器
-    private bool playerWasVisible = true;     // 记录玩家原本是否可见
+
+    // Quick Outline（可选）
+    private Outline objectOutline;
 
     void Start()
     {
-        // 获取玩家对象
         player = GameObject.FindGameObjectWithTag("Player");
         if (player != null)
         {
-            // 获取玩家控制器
             playerController = player.GetComponent<StarterAssets.FirstPersonController>();
-            // 获取玩家身上的所有渲染器
             playerRenderers = player.GetComponentsInChildren<Renderer>();
-
-            // 记录玩家原本的可见状态
-            if (playerRenderers != null && playerRenderers.Length > 0)
-            {
-                playerWasVisible = playerRenderers[0].enabled;
-            }
         }
 
-        // 初始状态：VCam 优先级为 0
-        if (vcam != null)
-            vcam.Priority = 0;
+        objectOutline = GetComponent<Outline>();
+        if (objectOutline != null) objectOutline.enabled = false;
 
-        // UI 面板默认隐藏
-        if (infoPanel != null)
-            infoPanel.SetActive(false);
-
-        // 3D 提示文字默认隐藏
-        if (pressE_3D != null)
-            pressE_3D.SetActive(false);
-
-        // 应用普通材质
+        if (vcam != null) vcam.Priority = 0;
+        if (infoPanel != null) infoPanel.SetActive(false);
+        if (hintPanel != null) hintPanel.SetActive(false);
+        if (pressE_3D != null) pressE_3D.SetActive(false);
         if (noteRenderer != null && normalMaterial != null)
             noteRenderer.material = normalMaterial;
     }
 
     void Update()
     {
-        // 玩家在范围内且按下 E 键，且没有正在查看
         if (isPlayerNear && Input.GetKeyDown(KeyCode.E) && !isViewing)
         {
             StartViewing();
         }
-        // 正在查看时按 E 键退出
         else if (isViewing && Input.GetKeyDown(KeyCode.E))
         {
             StopViewing();
@@ -84,33 +80,26 @@ public class ReadableNote : MonoBehaviour
     {
         isViewing = true;
 
-        // 禁用玩家控制器（锁定移动和视角）
-        if (playerController != null)
-            playerController.enabled = false;
+        if (playerController != null) playerController.enabled = false;
+        if (playerRenderers != null)
+        {
+            foreach (Renderer r in playerRenderers) r.enabled = false;
+        }
 
-        // 隐藏玩家模型（避免在镜头中看到胶囊人）
-        SetPlayerVisible(false);
-
-        // 启用 Cinemachine 相机
-        if (vcam != null)
-            vcam.Priority = 10;
-
-        // 显示 UI 面板
+        if (vcam != null) vcam.Priority = 10;
         if (infoPanel != null)
         {
             infoTextUI.text = infoText;
             infoPanel.SetActive(true);
         }
 
-        // 隐藏 3D 提示文字
-        if (pressE_3D != null)
-            pressE_3D.SetActive(false);
-
-        // 恢复普通材质（取消高亮）
+        // 查看时隐藏提示面板和3D文字
+        if (hintPanel != null) hintPanel.SetActive(false);
+        if (pressE_3D != null) pressE_3D.SetActive(false);
         if (noteRenderer != null && normalMaterial != null)
             noteRenderer.material = normalMaterial;
+        if (objectOutline != null) objectOutline.enabled = false;
 
-        // 解锁鼠标
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
     }
@@ -119,37 +108,13 @@ public class ReadableNote : MonoBehaviour
     {
         isViewing = false;
 
-        // 恢复玩家控制器
-        if (playerController != null)
-            playerController.enabled = true;
+        if (playerController != null) playerController.enabled = true;
+        // 不恢复玩家模型（保持纯第一人称）
+        if (vcam != null) vcam.Priority = 0;
+        if (infoPanel != null) infoPanel.SetActive(false);
 
-        // 注意：不恢复玩家模型！保持隐藏状态
-        // 第一人称游戏本来就不该看到自己的身体
-        // SetPlayerVisible(true);  // 这行已删除
-
-        // 恢复原来的相机（优先级设回 0）
-        if (vcam != null)
-            vcam.Priority = 0;
-
-        // 隐藏 UI 面板
-        if (infoPanel != null)
-            infoPanel.SetActive(false);
-
-        // 锁定鼠标
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
-    }
-
-    // 控制玩家模型可见性的辅助方法
-    void SetPlayerVisible(bool visible)
-    {
-        if (playerRenderers != null)
-        {
-            foreach (Renderer r in playerRenderers)
-            {
-                r.enabled = visible;
-            }
-        }
     }
 
     void OnTriggerEnter(Collider other)
@@ -158,13 +123,31 @@ public class ReadableNote : MonoBehaviour
         {
             isPlayerNear = true;
 
-            // 显示 3D 提示文字
-            if (pressE_3D != null)
-                pressE_3D.SetActive(true);
+            // 前两次：同时显示 UI 提示面板 和 3D "Press E" 文字
+            if (globalHintCount < MAX_HINT_COUNT)
+            {
+                // 屏幕下方的 UI 提示面板（完整说明）
+                if (hintPanel != null && hintTextUI != null)
+                {
+                    hintTextUI.text = hintMessage;
+                    hintPanel.SetActive(true);
+                }
 
-            // 应用高亮材质
+                // 物体上方的 3D 文字（简短的 "Press E"）
+                if (pressE_3D != null)
+                {
+                    // 可以确保 3D 文字上的 TextMeshPro 组件内容已经是 "Press E"
+                    pressE_3D.SetActive(true);
+                }
+
+                globalHintCount++;
+            }
+
+            // 高亮材质始终启用（无论第几次）
             if (noteRenderer != null && highlightMaterial != null)
                 noteRenderer.material = highlightMaterial;
+            if (objectOutline != null)
+                objectOutline.enabled = true;
         }
     }
 
@@ -174,13 +157,13 @@ public class ReadableNote : MonoBehaviour
         {
             isPlayerNear = false;
 
-            // 隐藏 3D 提示文字
-            if (pressE_3D != null)
-                pressE_3D.SetActive(false);
-
-            // 恢复普通材质
+            // 隐藏所有提示
+            if (hintPanel != null) hintPanel.SetActive(false);
+            if (pressE_3D != null) pressE_3D.SetActive(false);
             if (noteRenderer != null && normalMaterial != null)
                 noteRenderer.material = normalMaterial;
+            if (objectOutline != null)
+                objectOutline.enabled = false;
         }
     }
 }
