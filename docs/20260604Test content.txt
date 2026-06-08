@@ -1,0 +1,5 @@
+Test content: 
+写了测试脚本，但一开始什么都没触发---player少了碰撞体capsule collider
+给player加了之后一蹦就会飞到天花板我不行了--碰撞体异常了
+notepad无法触发玩家靠近的检测---我怀疑是collider范围太小了-->确实是范围太小，调整之后可以触发了
+使用viewpoint空对象的方式不太适用，无法正确触发视角切换-->换成virtual camera了
