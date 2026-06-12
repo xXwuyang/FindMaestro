@@ -10,8 +10,8 @@ public class ComputerTerminal : MonoBehaviour
 
     [Header("AI 对话")]
     [TextArea] public string[] dialogueLines;
-    public float lineDelay = 1.5f;          // 每行显示完后的额外停顿
-    public float typeSpeed = 0.05f;         // 每个字符出现的间隔（秒）
+    public float lineDelay = 1.5f;
+    public float typeSpeed = 0.05f;
     public GameObject dialoguePanel;
     public TextMeshProUGUI dialogueText;
 
@@ -19,6 +19,9 @@ public class ComputerTerminal : MonoBehaviour
     public Transform teleportTarget;
     public GameObject fadePanel;
     public float fadeDuration = 0.5f;
+
+    [Header("第二层对话触发器")]
+    public GameObject secondLevelDialogueTrigger;   // 拖入 SecondLevelDialogueTrigger 物体（带 DialogueManager）
 
     private GameObject player;
     private StarterAssets.FirstPersonController playerController;
@@ -46,7 +49,7 @@ public class ComputerTerminal : MonoBehaviour
         if (endVCam != null) endVCam.Priority = 10;
         yield return new WaitForSeconds(0.8f);
 
-        // 逐行显示对话（逐字打印）
+        // AI 对话
         dialoguePanel.SetActive(true);
         foreach (string line in dialogueLines)
         {
@@ -58,7 +61,7 @@ public class ComputerTerminal : MonoBehaviour
         // 淡出
         yield return StartCoroutine(Fade(1f));
 
-        // 强制切回相机（禁用 VCam 物体，避免回切动画）
+        // 强制切回相机
         if (endVCam != null) endVCam.gameObject.SetActive(false);
 
         CinemachineBrain brain = Camera.main.GetComponent<CinemachineBrain>();
@@ -76,19 +79,45 @@ public class ComputerTerminal : MonoBehaviour
         // 淡入
         yield return StartCoroutine(Fade(0f));
 
-        // 解锁玩家
+        // ========== 激活第二层对话（增强版） ==========
+        if (secondLevelDialogueTrigger != null)
+        {
+            // 确保物体处于激活状态
+            if (!secondLevelDialogueTrigger.activeSelf)
+            {
+                secondLevelDialogueTrigger.SetActive(true);
+                Debug.Log("已激活 SecondLevelDialogueTrigger");
+            }
+
+            // 等待一帧，确保物体完全激活（防止时序问题）
+            yield return null;
+
+            DialogueManager dm = secondLevelDialogueTrigger.GetComponent<DialogueManager>();
+            if (dm != null)
+            {
+                dm.StartDialogue();
+                Debug.Log("已调用 DialogueManager.StartDialogue()");
+            }
+            else
+            {
+                Debug.LogError("SecondLevelDialogueTrigger 上没有找到 DialogueManager 组件！");
+            }
+        }
+        else
+        {
+            Debug.LogError("secondLevelDialogueTrigger 未在 Inspector 中拖拽！");
+        }
+
+        // 解锁玩家（对话管理器会再次锁定，无影响）
         if (playerController != null) playerController.enabled = true;
     }
 
-    // 逐字打印协程
     IEnumerator TypeText(string line)
     {
         dialogueText.text = "";
         foreach (char c in line.ToCharArray())
         {
             dialogueText.text += c;
-            // 可选：在这里播放打字音效
-            // AudioSource.PlayClipAtPoint(typingSound, Camera.main.transform.position);
             yield return new WaitForSeconds(typeSpeed);
         }
     }
