@@ -23,12 +23,15 @@ public class DialogueManager : MonoBehaviour
     public float typingSpeed = 0.05f;
     public float objectiveDisplayTime = 3f;
 
+    // 新增：碎片计数器 UI（对话结束后才显示）
+    public GameObject fragmentCounterUI;
+
     // 引用玩家组件
     private GameObject player;
     private StarterAssets.FirstPersonController playerController;
     private CharacterController characterController;
     private CinemachineInputProvider inputProvider;
-    private CinemachineVirtualCamera playerVirtualCamera; // 主虚拟相机（可选）
+    private CinemachineVirtualCamera playerVirtualCamera;
 
     private int index;
     private bool isTyping = false;
@@ -39,6 +42,7 @@ public class DialogueManager : MonoBehaviour
         if (dialoguePanel != null) dialoguePanel.SetActive(false);
         if (continuePrompt != null) continuePrompt.SetActive(false);
         if (objectivePanel != null) objectivePanel.SetActive(false);
+        if (fragmentCounterUI != null) fragmentCounterUI.SetActive(false); // 初始隐藏
 
         player = GameObject.FindGameObjectWithTag("Player");
         if (player != null)
@@ -46,7 +50,6 @@ public class DialogueManager : MonoBehaviour
             playerController = player.GetComponent<StarterAssets.FirstPersonController>();
             characterController = player.GetComponent<CharacterController>();
             inputProvider = player.GetComponent<CinemachineInputProvider>();
-            // 尝试获取玩家身上的主虚拟相机（通常在子物体中）
             playerVirtualCamera = player.GetComponentInChildren<CinemachineVirtualCamera>();
             if (playerVirtualCamera != null)
                 originalVcamPriority = playerVirtualCamera.Priority;
@@ -68,17 +71,15 @@ public class DialogueManager : MonoBehaviour
 
         // 禁用移动（会产生警告但不影响游戏）
         if (playerController != null) playerController.enabled = false;
-        if (characterController != null) characterController.enabled = false;  // 这会导致警告，但移动会停
+        if (characterController != null) characterController.enabled = false;
 
-        // 禁用视角旋转：方法1禁用输入提供者
+        // 禁用视角旋转
         if (inputProvider != null) inputProvider.enabled = false;
-        // 方法2降低虚拟相机优先级（如果存在）
         if (playerVirtualCamera != null) playerVirtualCamera.Priority = 0;
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
 
-        // 强制刷新说话者名字
         if (speakerNameText != null)
         {
             speakerNameText.gameObject.SetActive(false);
@@ -168,9 +169,17 @@ public class DialogueManager : MonoBehaviour
         if (inputProvider != null) inputProvider.enabled = true;
         if (playerVirtualCamera != null) playerVirtualCamera.Priority = originalVcamPriority;
 
+        // 对话结束，显示碎片计数器
+        Debug.Log("准备激活 fragmentCounterUI，引用是否为 null: " + (fragmentCounterUI == null));
+        if (fragmentCounterUI != null)
+        {
+            fragmentCounterUI.SetActive(true);
+            Debug.Log("已激活 fragmentCounterUI，当前 activeSelf: " + fragmentCounterUI.activeSelf);
+        }
+
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
 
-        Debug.Log("目标提示结束，玩家恢复控制");
+        Debug.Log("目标提示结束，玩家恢复控制，碎片计数器已显示");
     }
 }
