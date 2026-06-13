@@ -91,7 +91,7 @@ FindMaestro/                ← Git root (outer)
 All third‑party assets are used under their respective licenses (free for non‑commercial educational use).  
 Modifications (material conversion, collision setup, script integration) were done by the developer.
 
-### Unity Asset Store
+### Scenes and Items
 
 | Asset | Purpose | Source |
 |-------|---------|--------|
@@ -110,6 +110,22 @@ Modifications (material conversion, collision setup, script integration) were do
 | **Input System** | Unified input handling |
 | **TextMeshPro** | UI and 3D text rendering |
 
+## Audio Credits
+
+All sound effects are used under the **Pixabay License** (royalty‑free, commercial use allowed). Attribution is provided voluntarily; each entry includes the author name and original source link.
+
+| Sound File | Usage | Author (Pixabay) | Source Link |
+|------------|-------|------------------|--------------|
+| `Beam` | AIScanner envirment sound | *[gustavorezende]* "https://pixabay.com/users/gustavorezende-1488336/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=272990" | *[https://pixabay.com/sound-effects/film-special-effects-beam-272990/]* |
+| `Short energy beam shot(3)` | AI scanner hits the player | *[Yodguard]* "https://pixabay.com/users/yodguard-12455005/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=482517" | *[https://pixabay.com/sound-effects/film-special-effects-short-energy-beam-shot-3-482517/]* |
+| `Pick up or found it secret item` | Activate storyline | *[freesound_community]* "https://pixabay.com/users/freesound_community-46691455/" | *[https://pixabay.com/sound-effects/technology-pick-up-or-found-it-secret-item-104874/]* |
+| `Keys_pickup` | Player picks up creativity fragment | *[freesound_community]* "https://pixabay.com/users/freesound_community-46691455/" | *[https://pixabay.com/sound-effects/household-keys-pickup-27204/]* |
+| `>loading` | Player teleports between layers | *[Author Name]* | *[Pixabay URL]* |
+
+---
+
+> **Note**: If any sound was modified (e.g., trimmed, pitch‑shifted, layered), it is indicated in the “Usage” column. All other sounds are used as‑is.
+
 ### Self‑Generated / Modified Assets
 
 | Asset | Description |
@@ -121,8 +137,6 @@ Modifications (material conversion, collision setup, script integration) were do
 | **Creativity fragment model** | Simple cube with custom glow material. |
 | **Level design & lighting** | All scene layout, lighting adjustments, fog, post‑processing settings. |
 | **Narrative texts** | All posters, computer logs, diary entries, NPC dialogues, ending lines – original writing. |
-
-### No external audio / fonts used in the current vertical slice (default TextMeshPro font is used).
 
 ---
 
