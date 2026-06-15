@@ -1,6 +1,7 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
+using System.Collections;
 
 public class DoorLock : MonoBehaviour
 {
@@ -9,43 +10,107 @@ public class DoorLock : MonoBehaviour
     public TMP_InputField inputField;
     public Button submitButton;
 
-    [Header("ÃÜÂë")]
-    public string correctPassword = "17";
+    [Header("å¯†ç ")]
+    public string correctPassword = "20260608";
 
     private bool isPlayerNear = false;
+    private bool isUIOpen = false;
 
     void Start()
     {
         passwordPanel.SetActive(false);
-        submitButton.onClick.AddListener(CheckPassword);
+
+        if (submitButton != null)
+            submitButton.onClick.AddListener(CheckPassword);
     }
 
     void Update()
     {
-        if (isPlayerNear && Input.GetKeyDown(KeyCode.E) && !passwordPanel.activeSelf)
+        // æ‰“å¼€UI
+        if (isPlayerNear && Input.GetKeyDown(KeyCode.E) && !isUIOpen)
         {
-            passwordPanel.SetActive(true);
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
+            OpenUI();
+        }
+        // UIå·²æ‰“å¼€
+        else if (isUIOpen)
+        {
+            // å›è½¦æäº¤
+            if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
+            {
+                CheckPassword();
+            }
+
+            // Eå…³é—­UI
+            if (Input.GetKeyDown(KeyCode.E))
+            {
+                CloseUI();
+            }
+        }
+    }
+
+    void OpenUI()
+    {
+        isUIOpen = true;
+        passwordPanel.SetActive(true);
+
+        // è§£é”é¼ æ ‡
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+
+        inputField.text = "";
+
+        // å»¶è¿Ÿä¸€å¸§å†èšç„¦ï¼ˆUIç¨³å®šå…³é”®ï¼‰
+        StartCoroutine(FocusInput());
+    }
+
+    void CloseUI()
+    {
+        isUIOpen = false;
+        passwordPanel.SetActive(false);
+
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+
+        inputField.text = "";
+    }
+
+    IEnumerator FocusInput()
+    {
+        yield return null;
+
+        if (inputField != null)
+        {
+            inputField.Select();
+            inputField.ActivateInputField();
         }
     }
 
     void CheckPassword()
     {
-        if (inputField.text == correctPassword)
+        string input = inputField.text.Trim();
+
+        if (input == correctPassword)
         {
-            passwordPanel.SetActive(false);
-            // ÕÒµ½³¡¾°ÖĞµÄµçÄÔÖÕ¶Ë£¬´¥·¢¹ı³¡¶¯»­
+            CloseUI();
+
             ComputerTerminal terminal = FindObjectOfType<ComputerTerminal>();
             if (terminal != null)
+            {
                 terminal.StartTransition();
+            }
             else
-                Debug.LogError("Î´ÕÒµ½ ComputerTerminal£¬ÇëÈ·±£³¡¾°ÖĞÓĞ¹ÒÔØ ComputerTerminal ½Å±¾µÄÎïÌå");
+            {
+                Debug.LogError("æœªæ‰¾åˆ° ComputerTerminal");
+            }
         }
         else
         {
             inputField.text = "";
-            Debug.Log("ÃÜÂë´íÎó");
+
+            // é‡æ–°èšç„¦ï¼ˆå¤±è´¥åç»§ç»­è¾“å…¥ï¼‰
+            StartCoroutine(FocusInput());
+
+            Debug.Log("å¯†ç é”™è¯¯");
         }
     }
 
