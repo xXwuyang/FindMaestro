@@ -1,120 +1,177 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using Cinemachine;
 using TMPro;
-using System.Collections;
 
 public class ReadableNote : MonoBehaviour
 {
-    [Header("Cinemachine Ïà»ú")]
-    public CinemachineVirtualCamera vcam;   // Ã¿¸öÎïÆ·¶ÀÁ¢µÄ VCam
+    [Header("Cinemachine ç›¸æœº")]
+    public CinemachineVirtualCamera vcam;
 
-    [Header("ÏêÇéÔÄ¶Á UI")]
-    public GameObject infoPanel;            // ÏÔÊ¾ÏêÏ¸ÎÄ×ÖµÄÃæ°å£¨´ø¹ö¶¯Ìõ£©
-    public TextMeshProUGUI infoTextUI;      // ÏêÇéÎÄ×Ö
+    [Header("è¯¦æƒ…é˜…è¯» UI")]
+    public GameObject infoPanel;
+    public TextMeshProUGUI infoTextUI;
+    public RectTransform infoTextRect;
 
-    [Header("ÌáÊ¾ UI£¨È«¾Ö¹²ÓÃ£©")]
-    public GameObject hintPanel;            // ÆÁÄ»¹Ì¶¨Î»ÖÃµÄÌáÊ¾Ãæ°å
-    public TextMeshProUGUI hintTextUI;      // ÌáÊ¾ÎÄ×ÖÄÚÈİ
+    [Header("æç¤º UI")]
+    public GameObject hintPanel;
+    public TextMeshProUGUI hintTextUI;
 
-    [Header("3D ÌáÊ¾ÎÄ×Ö")]
-    public GameObject pressE_3D;            // ÎïÌåÉÏ·½µÄ 3D "Press E" ÎÄ×Ö
+    [Header("3D æç¤º")]
+    public GameObject pressE_3D;
 
-    [Header("¸ßÁÁ²ÄÖÊ")]
-    public Material normalMaterial;
-    public Material highlightMaterial;
-    public Renderer noteRenderer;
+    [Header("Quick Outlineï¼ˆæè¾¹ç»„ä»¶ï¼‰")]
+    public Outline outline;   // ç›´æ¥å¼•ç”¨ Quick Outline ç»„ä»¶
 
-    [Header("ÎÄ×ÖÄÚÈİ")]
+    [Header("æ–‡æœ¬å†…å®¹")]
     [TextArea(5, 10)]
-    public string infoText = "±Ê¼ÇÄÚÈİ...";
+    public string infoText = "ç¬”è®°å†…å®¹...";
 
-    // È«¾Ö¹²Ïí¼ÆÊıÆ÷£¨ËùÓĞ¿É½»»¥ÎïÌå¹²ÓÃÇ°Á½´ÎÌáÊ¾£©
     private static int globalHintCount = 0;
     private const int MAX_HINT_COUNT = 2;
-
-    // ÌáÊ¾ÎÄ×Ö£¨ÍêÕûËµÃ÷£©
-    private string hintMessage = "When an object shows a yellow stroke, press E can learn more about this clue";
+    private string hintMessage =
+        "When an object shows a yellow stroke, press E can learn more about this clue";
 
     private GameObject player;
     private StarterAssets.FirstPersonController playerController;
-    private Renderer[] playerRenderers;
     private bool isViewing = false;
     private bool isPlayerNear = false;
 
-    // Quick Outline£¨¿ÉÑ¡£©
-    private Outline objectOutline;
+    private Vector2 originalPos;
 
     void Start()
     {
         player = GameObject.FindGameObjectWithTag("Player");
         if (player != null)
-        {
             playerController = player.GetComponent<StarterAssets.FirstPersonController>();
-            playerRenderers = player.GetComponentsInChildren<Renderer>();
-        }
-
-        objectOutline = GetComponent<Outline>();
-        if (objectOutline != null) objectOutline.enabled = false;
 
         if (vcam != null) vcam.Priority = 0;
         if (infoPanel != null) infoPanel.SetActive(false);
         if (hintPanel != null) hintPanel.SetActive(false);
         if (pressE_3D != null) pressE_3D.SetActive(false);
-        if (noteRenderer != null && normalMaterial != null)
-            noteRenderer.material = normalMaterial;
+
+        // ç¡®ä¿å¼€å§‹æ—¶ outline æ˜¯å…³é—­çš„
+        if (outline != null)
+            outline.enabled = false;
     }
 
     void Update()
     {
+        HandleInput();
+
+        if (isViewing)
+            ApplyReadingDistortion();
+
+        // âœ” ç¨³å®šç‰ˆ Outline æ§åˆ¶ï¼ˆå…³é”®ä¿®å¤ï¼‰
+        if (outline != null)
+        {
+            outline.enabled = isPlayerNear;
+        }
+    }
+
+    void HandleInput()
+    {
         if (isPlayerNear && Input.GetKeyDown(KeyCode.E) && !isViewing)
-        {
             StartViewing();
-        }
         else if (isViewing && Input.GetKeyDown(KeyCode.E))
-        {
             StopViewing();
-        }
     }
 
     void StartViewing()
     {
         isViewing = true;
 
-        if (playerController != null) playerController.enabled = false;
-        if (playerRenderers != null)
+        if (infoTextRect != null)
+            originalPos = infoTextRect.anchoredPosition;
+
+        if (ExposureSystem.Instance != null)
         {
-            foreach (Renderer r in playerRenderers) r.enabled = false;
+            ExposureSystem.Instance.freezeDecay = true;
+            ExposureSystem.Instance.AddExposure(12f);
         }
 
-        if (vcam != null) vcam.Priority = 10;
+        if (playerController != null)
+            playerController.enabled = false;
+
+        if (vcam != null)
+            vcam.Priority = 10;
+
         if (infoPanel != null)
         {
             infoTextUI.text = infoText;
             infoPanel.SetActive(true);
         }
 
-        // ²é¿´Ê±Òş²ØÌáÊ¾Ãæ°åºÍ3DÎÄ×Ö
         if (hintPanel != null) hintPanel.SetActive(false);
         if (pressE_3D != null) pressE_3D.SetActive(false);
-        if (noteRenderer != null && normalMaterial != null)
-            noteRenderer.material = normalMaterial;
-        if (objectOutline != null) objectOutline.enabled = false;
 
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+        UnityEngine.EventSystems.EventSystem.current?.SetSelectedGameObject(null);
     }
 
     void StopViewing()
     {
         isViewing = false;
 
-        if (playerController != null) playerController.enabled = true;
-        // ²»»Ö¸´Íæ¼ÒÄ£ĞÍ£¨±£³Ö´¿µÚÒ»ÈË³Æ£©
-        if (vcam != null) vcam.Priority = 0;
-        if (infoPanel != null) infoPanel.SetActive(false);
+        if (ExposureSystem.Instance != null)
+            ExposureSystem.Instance.freezeDecay = false;
+
+        if (playerController != null)
+            playerController.enabled = true;
+
+        if (vcam != null)
+            vcam.Priority = 0;
+
+        if (infoPanel != null)
+            infoPanel.SetActive(false);
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+    }
+
+    void ApplyReadingDistortion()
+    {
+        if (ExposureSystem.Instance == null) return;
+        if (infoTextUI == null) return;
+
+        float t = ExposureSystem.Instance.exposure / ExposureSystem.Instance.maxExposure;
+
+        float alpha = Mathf.Lerp(1f, 0.15f, t);
+        infoTextUI.color = new Color(1f, 1f, 1f, alpha);
+
+        if (infoTextRect != null)
+        {
+            float intensity = t * 10f;
+            Vector2 shake = Random.insideUnitCircle * intensity;
+            infoTextRect.anchoredPosition = originalPos + shake;
+        }
+
+        if (t > 0.35f)
+        {
+            infoTextUI.text = GetCorruptedText(infoText, Mathf.Lerp(0f, 0.4f, t));
+        }
+        else
+        {
+            infoTextUI.text = infoText;
+        }
+    }
+
+    string GetCorruptedText(string input, float intensity)
+    {
+        char[] chars = input.ToCharArray();
+        for (int i = 0; i < chars.Length; i++)
+        {
+            if (chars[i] == ' ') continue;
+            if (Random.value < intensity)
+                chars[i] = GetRandomGlitchChar();
+        }
+        return new string(chars);
+    }
+
+    char GetRandomGlitchChar()
+    {
+        string pool = "!@#$%^&*_-+=?/\\|[]{}<>;:0123456789";
+        return pool[Random.Range(0, pool.Length)];
     }
 
     void OnTriggerEnter(Collider other)
@@ -122,32 +179,19 @@ public class ReadableNote : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             isPlayerNear = true;
+            // é«˜äº®å°†åœ¨ Update ä¸­é€šè¿‡ outline.enabled = true å¼€å¯
 
-            // Ç°Á½´Î£ºÍ¬Ê±ÏÔÊ¾ UI ÌáÊ¾Ãæ°å ºÍ 3D "Press E" ÎÄ×Ö
             if (globalHintCount < MAX_HINT_COUNT)
             {
-                // ÆÁÄ»ÏÂ·½µÄ UI ÌáÊ¾Ãæ°å£¨ÍêÕûËµÃ÷£©
                 if (hintPanel != null && hintTextUI != null)
                 {
                     hintTextUI.text = hintMessage;
                     hintPanel.SetActive(true);
                 }
-
-                // ÎïÌåÉÏ·½µÄ 3D ÎÄ×Ö£¨¼ò¶ÌµÄ "Press E"£©
                 if (pressE_3D != null)
-                {
-                    // ¿ÉÒÔÈ·±£ 3D ÎÄ×ÖÉÏµÄ TextMeshPro ×é¼şÄÚÈİÒÑ¾­ÊÇ "Press E"
                     pressE_3D.SetActive(true);
-                }
-
                 globalHintCount++;
             }
-
-            // ¸ßÁÁ²ÄÖÊÊ¼ÖÕÆôÓÃ£¨ÎŞÂÛµÚ¼¸´Î£©
-            if (noteRenderer != null && highlightMaterial != null)
-                noteRenderer.material = highlightMaterial;
-            if (objectOutline != null)
-                objectOutline.enabled = true;
         }
     }
 
@@ -156,14 +200,12 @@ public class ReadableNote : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             isPlayerNear = false;
+            // é«˜äº®å°†åœ¨ Update ä¸­é€šè¿‡ outline.enabled = false å…³é—­
 
-            // Òş²ØËùÓĞÌáÊ¾
-            if (hintPanel != null) hintPanel.SetActive(false);
-            if (pressE_3D != null) pressE_3D.SetActive(false);
-            if (noteRenderer != null && normalMaterial != null)
-                noteRenderer.material = normalMaterial;
-            if (objectOutline != null)
-                objectOutline.enabled = false;
+            if (hintPanel != null)
+                hintPanel.SetActive(false);
+            if (pressE_3D != null)
+                pressE_3D.SetActive(false);
         }
     }
 }

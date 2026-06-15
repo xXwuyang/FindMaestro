@@ -1,19 +1,19 @@
-using UnityEngine;
-using TMPro;          // ÒıÈë TextMeshPro ÃüÃû¿Õ¼ä
+ï»¿using UnityEngine;
+using TMPro;
 using System.Collections;
 
 public class AIScanner : MonoBehaviour
 {
-    [Header("³Í·£ÉèÖÃ")]
+    [Header("é‡ç½®")]
     public Transform resetPoint;
     public float resetCooldown = 1.5f;
 
-    [Header("¼ì²â²ÎÊı")]
+    [Header("æ£€æµ‹")]
     public float detectionRadius = 2.5f;
 
-    [Header("UI ÌáÊ¾")]
-    public GameObject detectionWarningPanel;        // ÌáÊ¾Ãæ°å£¨Ä¬ÈÏ½ûÓÃ£©
-    public TextMeshProUGUI warningText;             // Ãæ°åÄÚµÄÎÄ×Ö×é¼ş£¨ÍÏÈë£©
+    [Header("UI")]
+    public GameObject detectionWarningPanel;
+    public TextMeshProUGUI warningText;
     public float warningDisplayTime = 2.5f;
 
     private float lastResetTime = -10f;
@@ -28,9 +28,8 @@ public class AIScanner : MonoBehaviour
 
         Vector3 toPlayer = player.transform.position - transform.position;
         toPlayer.y = 0;
-        float horizontalDist = toPlayer.magnitude;
 
-        if (horizontalDist <= detectionRadius)
+        if (toPlayer.magnitude <= detectionRadius)
         {
             OnPlayerDetected(player);
         }
@@ -40,46 +39,52 @@ public class AIScanner : MonoBehaviour
     {
         lastResetTime = Time.time;
 
-        if (resetPoint != null)
-        {
-            CharacterController cc = player.GetComponent<CharacterController>();
-            if (cc != null) cc.enabled = false;
-            player.transform.position = resetPoint.position;
-            player.transform.rotation = resetPoint.rotation;
-            if (cc != null) cc.enabled = true;
-        }
+        // ğŸ”¥ æ–°å¢ï¼šå‹åŠ›å¢åŠ ï¼ˆå…³é”®ï¼‰
+        if (ExposureSystem.Instance != null)
+            ExposureSystem.Instance.AddExposure(35f);
 
+        // reset player
+        CharacterController cc = player.GetComponent<CharacterController>();
+        if (cc != null) cc.enabled = false;
+
+        player.transform.position = resetPoint.position;
+        player.transform.rotation = resetPoint.rotation;
+
+        if (cc != null) cc.enabled = true;
+
+        // reset fragments
         if (FragmentManager.Instance != null)
             FragmentManager.Instance.ResetFragments();
 
-        ShowWarning();
+        // éšè—å½“å‰æ˜¾ç¤ºçš„ç¢ç‰‡å¥å­
+        if (FragmentManager.Instance != null)
+            FragmentManager.Instance.HideCurrentPopup();
 
-        Debug.Log("Íæ¼Ò±» AI É¨Ãèµ½£¡Î»ÖÃÖØÖÃ£¬ËéÆ¬ÇåÁã¡£");
+        ShowWarning();
     }
 
     void ShowWarning()
     {
         if (detectionWarningPanel == null) return;
 
-        // ÉèÖÃ¾¯¸æÎÄ×Ö
         if (warningText != null)
         {
-            warningText.text = "You have been detected by AI! Your memory has been partially erased. Collect the fragments again.";
+            warningText.text = "AI DETECTED YOU! Memory instability increased.";
         }
 
         if (hideWarningCoroutine != null)
             StopCoroutine(hideWarningCoroutine);
 
         detectionWarningPanel.SetActive(true);
-        hideWarningCoroutine = StartCoroutine(HideWarningAfterDelay());
+        hideWarningCoroutine = StartCoroutine(HideWarning());
     }
 
-    IEnumerator HideWarningAfterDelay()
+    IEnumerator HideWarning()
     {
         yield return new WaitForSeconds(warningDisplayTime);
+
         if (detectionWarningPanel != null)
             detectionWarningPanel.SetActive(false);
-        hideWarningCoroutine = null;
     }
 
     void OnDrawGizmosSelected()

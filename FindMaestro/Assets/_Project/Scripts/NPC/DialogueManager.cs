@@ -154,7 +154,7 @@ public class DialogueManager : MonoBehaviour
     {
         if (objectivePanel != null && objectiveText != null)
         {
-            objectiveText.text = "AVOID AI BRAINWASHING\nCOLLECT HUMAN CREATIVITY FRAGMENTS\n\n\nTIPS:Be careful not to get caught by AI surveillance, " +
+            objectiveText.text = "AVOID AI BRAINWASHING\nCOLLECT HUMAN CREATIVITY FRAGMENTS\n\nTIPS:Be careful not to get caught by AI surveillance, " +
                 "and collect the glowing fragments in the scene at the same time.\n GOOD LUCK";
             objectivePanel.SetActive(true);
         }
