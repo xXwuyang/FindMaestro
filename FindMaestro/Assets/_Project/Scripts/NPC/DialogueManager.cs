@@ -23,8 +23,12 @@ public class DialogueManager : MonoBehaviour
     public float typingSpeed = 0.05f;
     public float objectiveDisplayTime = 3f;
 
-    // 新增：碎片计数器 UI（对话结束后才显示）
+    // 碎片计数器 UI（对话结束后显示）
     public GameObject fragmentCounterUI;
+
+    // --- 新增：全局扫描音效 ---
+    public AudioClip scanLoopSound;   // 拖入循环播放的激光/扫描音效
+    private AudioSource scanAudioSource;
 
     // 引用玩家组件
     private GameObject player;
@@ -37,12 +41,23 @@ public class DialogueManager : MonoBehaviour
     private bool isTyping = false;
     private int originalVcamPriority;
 
+    void Awake()
+    {
+        // 初始化扫描音效的 AudioSource
+        scanAudioSource = gameObject.AddComponent<AudioSource>();
+        scanAudioSource.loop = true;
+        scanAudioSource.playOnAwake = false;
+        scanAudioSource.volume = 0.05f;   // 调低音量，不吓人
+        if (scanLoopSound != null)
+            scanAudioSource.clip = scanLoopSound;
+    }
+
     void Start()
     {
         if (dialoguePanel != null) dialoguePanel.SetActive(false);
         if (continuePrompt != null) continuePrompt.SetActive(false);
         if (objectivePanel != null) objectivePanel.SetActive(false);
-        if (fragmentCounterUI != null) fragmentCounterUI.SetActive(false); // 初始隐藏
+        if (fragmentCounterUI != null) fragmentCounterUI.SetActive(false);
 
         player = GameObject.FindGameObjectWithTag("Player");
         if (player != null)
@@ -65,15 +80,20 @@ public class DialogueManager : MonoBehaviour
             return;
         }
 
+        // 播放全局扫描音效（循环）
+        if (scanAudioSource != null && scanLoopSound != null && !scanAudioSource.isPlaying)
+        {
+            scanAudioSource.Play();
+            Debug.Log("全局扫描音效已开始播放");
+        }
+
         dialoguePanel.SetActive(true);
         Canvas canvas = dialoguePanel.GetComponentInParent<Canvas>();
         if (canvas != null && !canvas.gameObject.activeSelf) canvas.gameObject.SetActive(true);
 
-        // 禁用移动（会产生警告但不影响游戏）
+        // 禁用移动和视角
         if (playerController != null) playerController.enabled = false;
         if (characterController != null) characterController.enabled = false;
-
-        // 禁用视角旋转
         if (inputProvider != null) inputProvider.enabled = false;
         if (playerVirtualCamera != null) playerVirtualCamera.Priority = 0;
 
@@ -169,17 +189,26 @@ public class DialogueManager : MonoBehaviour
         if (inputProvider != null) inputProvider.enabled = true;
         if (playerVirtualCamera != null) playerVirtualCamera.Priority = originalVcamPriority;
 
-        // 对话结束，显示碎片计数器
-        Debug.Log("准备激活 fragmentCounterUI，引用是否为 null: " + (fragmentCounterUI == null));
+        // 显示碎片计数器
         if (fragmentCounterUI != null)
         {
             fragmentCounterUI.SetActive(true);
-            Debug.Log("已激活 fragmentCounterUI，当前 activeSelf: " + fragmentCounterUI.activeSelf);
         }
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+    }
 
-        Debug.Log("目标提示结束，玩家恢复控制，碎片计数器已显示");
+    // 可选：如果离开第二层时需要主动停止音效，可调用此方法（场景切换时自动销毁，一般不需要）
+    public void StopScanSound()
+    {
+        if (scanAudioSource != null && scanAudioSource.isPlaying)
+            scanAudioSource.Stop();
+    }
+
+    private void OnDestroy()
+    {
+        if (scanAudioSource != null)
+            scanAudioSource.Stop();
     }
 }
