@@ -120,7 +120,7 @@ All sound effects are used under the **Pixabay License** (royalty‑free, commer
 | `Short energy beam shot(3)` | AI scanner hits the player | *[Yodguard]* "https://pixabay.com/users/yodguard-12455005/?utm_source=link-attribution&utm_medium=referral&utm_campaign=music&utm_content=482517" | *[https://pixabay.com/sound-effects/film-special-effects-short-energy-beam-shot-3-482517/]* |
 | `Pick up or found it secret item` | Activate storyline | *[freesound_community]* "https://pixabay.com/users/freesound_community-46691455/" | *[https://pixabay.com/sound-effects/technology-pick-up-or-found-it-secret-item-104874/]* |
 | `Keys_pickup` | Player picks up creativity fragment | *[freesound_community]* "https://pixabay.com/users/freesound_community-46691455/" | *[https://pixabay.com/sound-effects/household-keys-pickup-27204/]* |
-| `>loading` | Player teleports between layers | *[Author Name]* | *[Pixabay URL]* |
+| `sector.mp3` | Total background music | *[SRG774]* | *[https://opengameart.org/content/dark-sci-fi-audio-pack]* |
 
 ---
 

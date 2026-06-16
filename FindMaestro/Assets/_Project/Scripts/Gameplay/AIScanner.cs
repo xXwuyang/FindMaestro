@@ -16,8 +16,21 @@ public class AIScanner : MonoBehaviour
     public TextMeshProUGUI warningText;
     public float warningDisplayTime = 2.5f;
 
+    [Header("Audio")]
+    public AudioClip resetSound;      // 被重置时的音效（拖入）
+    private AudioSource audioSource;  // 自动获取或添加
+
     private float lastResetTime = -10f;
     private Coroutine hideWarningCoroutine;
+
+    void Awake()
+    {
+        // 初始化 AudioSource
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+            audioSource = gameObject.AddComponent<AudioSource>();
+        audioSource.playOnAwake = false;
+    }
 
     void Update()
     {
@@ -39,11 +52,15 @@ public class AIScanner : MonoBehaviour
     {
         lastResetTime = Time.time;
 
-        // 🔥 新增：压力增加（关键）
+        // 播放重置音效
+        if (resetSound != null && audioSource != null)
+            audioSource.PlayOneShot(resetSound, 0.1f);
+
+        // 压力增加
         if (ExposureSystem.Instance != null)
             ExposureSystem.Instance.AddExposure(35f);
 
-        // reset player
+        // 重置玩家位置
         CharacterController cc = player.GetComponent<CharacterController>();
         if (cc != null) cc.enabled = false;
 
@@ -52,7 +69,7 @@ public class AIScanner : MonoBehaviour
 
         if (cc != null) cc.enabled = true;
 
-        // reset fragments
+        // 重置碎片收集
         if (FragmentManager.Instance != null)
             FragmentManager.Instance.ResetFragments();
 
@@ -82,7 +99,6 @@ public class AIScanner : MonoBehaviour
     IEnumerator HideWarning()
     {
         yield return new WaitForSeconds(warningDisplayTime);
-
         if (detectionWarningPanel != null)
             detectionWarningPanel.SetActive(false);
     }
